@@ -19,5 +19,4 @@ module.exports.filterMoney =  function(req, res) {
                             res.json(payload);
                         } );
 
-
 }
