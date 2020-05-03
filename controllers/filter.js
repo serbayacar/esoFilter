@@ -18,8 +18,8 @@ module.exports.filterMoney =  function(req, res) {
 
    
                             let normalizedData = normalized (data);
-                            let filteredData = filterByMoney( normalizedData, 'test', 'test');
-                            filteredData = filterBySeen( filteredData, 'test', 'test');
+                            let filteredData = filterBySeen( normalizedData, 0, 1000000);
+                            filteredData = filterByMoney( filteredData, 0, 10000000);
 
                             payload = { status : 200 , content: { url : urlString , data : filteredData} };
                             res.status(200)
@@ -40,11 +40,11 @@ function normalized( data){
 
         if( el !== null ){
 
-            // let convertedName = el.name.replace(/\n+/g, 'serba');
-            // let convertedTrader = el.trader.replace(/\n+/g, 'serba');
-            // let convertedLocation = el.location.replace(/\n+/g, 'serba');
-            // let convertedPrice = el.price.replace(/\n+/g, 'serba');
-            // let convertedSeen = el.seen.replace(/\n+/g, 'serba');
+            let convertedName = el.name.replace(/\n+/g, 'serba');
+            let convertedTrader = el.trader.replace(/\n+/g, 'serba');
+            let convertedLocation = el.location.replace(/\n+/g, 'serba');
+            let convertedPrice = el.price.replace(/\n+/g, 'serba');
+            let convertedSeen = el.seen.replace(/\n+/g, 'serba');
 
             return { 
                 name: convertedName, 
@@ -60,25 +60,35 @@ function normalized( data){
     return normalizedData;
 }
 
-function filterByMoney( data , moneyFrom, moneyTo ){
+function filterBySeen( data , seenFrom, seenTo){
 
     const filteredData = data.filter( (el) => {
 
+        const seen = el.seen.split(' ')[0] == 'Now' ? 0 : el.seen.split(' ')[0];
+
         if( el !== null ){
-            return el.trader == 'Community';
+            // return el.trader == 'Community';
+            return parseInt(seen) <= parseInt(seenTo) && 
+                   parseInt(seenFrom) <= parseInt(seen) ;
         }
         
     });
 
+    console.log(filteredData);
     return filteredData;
 }
 
-function filterBySeen( data , seenFrom, seenTo ){
+function filterByMoney( data , priceFrom, priceTo ){
 
     const filteredData = data.filter( (el) => {
 
+        const price = el.price.split('\n')[0].replace(',', '.');
+
+
+        //TODO :: fix if statements
         if( el !== null ){
-            return el.trader == 'Community';
+            return parseFloat(price).toFixed(3) <= parseFloat(priceTo).toFixed(3) &&
+                   parseFloat(priceFrom).toFixed(3) <= parseFloat(price).toFixed(3);
         }
         
     });
