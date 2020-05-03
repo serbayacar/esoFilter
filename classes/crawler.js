@@ -147,3 +147,68 @@ async function crawl( searchURL ) {
 }
 
 module.exports = Crawler;
+
+
+module.exports.crawlItem  = async(searchURL) => {
+   
+    const tableSelector = '.trade-list-table';
+    const cursorSelector = '.cursor-pointer';
+    const firstChildSelector = 'td:first-child';
+    const tableDecSelector = 'td';
+
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.setViewport({
+        width: 1024,
+        height: 768,
+        deviceScaleFactor: 1,
+      });
+    await page.goto(searchURL, { waitUntil : 'networkidle0' });
+            
+    console.log('Page Loaded  :: ' + searchURL);
+
+    await page.screenshot({ path: 'test.png' });
+    console.log('Getting Items .....');
+
+    await page.waitFor(tableSelector);
+    const items = await page.evaluate(( tableSelector, cursorSelector, firstChildSelector, tableDecSelector  ) => {
+
+
+        const tableWrapper = document.querySelector( tableSelector );
+
+        const itemRows = tableWrapper.querySelectorAll( cursorSelector );
+
+           
+        const itemJsons = Object.values(itemRows).map( (el) => {
+
+            if(el.querySelector( firstChildSelector ) !== null) {
+                const tds = el.querySelectorAll( tableDecSelector );
+            
+                const name = tds[0].innerText;
+                const trader = tds[1].innerText;
+                const location  = tds[2].innerText;
+                const price  = tds[3].innerText;
+                const seen  = tds[4].innerText;
+
+                return { name: name, trader: trader, location: location, price : price, seen: seen };
+            }
+
+            });
+
+        return itemJsons;
+    }, tableSelector, cursorSelector, firstChildSelector, tableDecSelector );
+
+    console.log('Filtering Items .....');
+    const filteredItems = items.filter( (el) => {
+        return typeof(el) !== 'undefined'
+    });
+
+    //Close browser
+    await browser.close();
+
+    console.log('Finish .....');
+    return filteredItems;
+
+
+}
+
