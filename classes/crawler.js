@@ -55,7 +55,7 @@ class Crawler{
 
     getPageURL( page ) {
         const queries = { 'page' : page  };
-        return this.searchURL + httpBuildQuery(queries);
+        return this.searchURL + '&' + httpBuildQuery(queries);
     }
 
     crawlData() {
@@ -88,7 +88,7 @@ class Crawler{
 module.exports = Crawler;
 
 
-module.exports.crawlItem  = async(searchURL) => {
+module.exports.crawlItem  = async(searchURL, pageStart, pageTo) => {
    
 
     const browser = await puppeteer.launch();
@@ -98,51 +98,58 @@ module.exports.crawlItem  = async(searchURL) => {
         height: 768,
         deviceScaleFactor: 1,
       });
-    await page.goto(searchURL, { waitUntil : 'networkidle0' });
-            
-    console.log('Page Loaded  :: ' + searchURL);
 
-    await page.screenshot({ path: 'test.png' });
-    console.log('Getting Items .....');
+    const AllItemsArray = [];
 
-    await page.waitFor(tableSelector);
-    const items = await page.evaluate(( tableSelector, cursorSelector, firstChildSelector, tableDecSelector  ) => {
+    do{
+        const pageURL = searchURL + '&page=' + pageStart;
+        console.log(pageURL);
+        await page.goto(pageURL, { waitUntil : 'networkidle0' });
+        console.log('Page Loaded  :: ' + pageURL);
+
+        console.log('Getting Items .....');
+        await page.waitFor(tableSelector);
+
+        const items = await page.evaluate(( tableSelector, cursorSelector, firstChildSelector, tableDecSelector  ) => {
 
 
-        const tableWrapper = document.querySelector( tableSelector );
+            const tableWrapper = document.querySelector( tableSelector );
+    
+            const itemRows = tableWrapper.querySelectorAll( cursorSelector );
+    
+               
+            const itemJsons = Object.values(itemRows).map( (el) => {
+    
+                if(el.querySelector( firstChildSelector ) !== null) {
+                    const tds = el.querySelectorAll( tableDecSelector );
+                
+                    const name = tds[0].innerText;
+                    const trader = tds[1].innerText;
+                    const location  = tds[2].innerText;
+                    const price  = tds[3].innerText;
+                    const seen  = tds[4].innerText;
+    
+                    return { name: name, trader: trader, location: location, price : price, seen: seen };
+                }
+    
+                });
+    
+            return itemJsons;
+        }, tableSelector, cursorSelector, firstChildSelector, tableDecSelector );
+    
+        AllItemsArray.push(...items);
 
-        const itemRows = tableWrapper.querySelectorAll( cursorSelector );
-
-           
-        const itemJsons = Object.values(itemRows).map( (el) => {
-
-            if(el.querySelector( firstChildSelector ) !== null) {
-                const tds = el.querySelectorAll( tableDecSelector );
-            
-                const name = tds[0].innerText;
-                const trader = tds[1].innerText;
-                const location  = tds[2].innerText;
-                const price  = tds[3].innerText;
-                const seen  = tds[4].innerText;
-
-                return { name: name, trader: trader, location: location, price : price, seen: seen };
-            }
-
-            });
-
-        return itemJsons;
-    }, tableSelector, cursorSelector, firstChildSelector, tableDecSelector );
-
-    console.log('Filtering Items .....');
-    const filteredItems = items.filter( (el) => {
-        return typeof(el) !== 'undefined'
-    });
+        console.log('Change Page .....');
+        pageStart++
+    }
+    while(pageStart <= pageTo)
 
     //Close browser
     await browser.close();
 
     console.log('Finish .....');
-    return filteredItems;
+    console.log(AllItemsArray);
+    return AllItemsArray;
 
 
 }
