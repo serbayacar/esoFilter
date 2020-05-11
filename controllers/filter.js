@@ -79,21 +79,25 @@ function normalized( data){
 
     const normalizedItems = normalizedData.map( (el) => {
 
-
-
+        //Name Handling
         const new_name = el.name.replace(/\s/g, " ").trim();
         const exacName = new_name.split('Level:')[0].trim();
         const level =  new_name.split('Level:')[1].trim();
         
+        //Trader Handling
         const new_trader = el.trader.replace(/\s/g, " ").trim();
+
+        //Location Handling
         const new_location = el.location.replace(/\s/g, " ").trim();
 
+        //Price Handling
         const new_price = el.price.replace(/\s/g, " ").trim();
         const total = new_price.split('=')[1].trim();
         const equation = new_price.split('=')[0].trim();
         const count = equation.split('X')[1].trim();
         const uniquePrice = equation.split('X')[0].trim();
 
+        //LastSeen Handling
         const new_seen = el.seen == 'Now' ? 0 : parseInt(el.seen.split(' ')[0].trim());
         return {
             name : exacName,
