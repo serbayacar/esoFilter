@@ -96,6 +96,7 @@ function normalized( data){
         const equation = new_price.split('=')[0].trim();
         const count = equation.split('X')[1].trim();
         const uniquePrice = equation.split('X')[0].trim();
+        const compareTotal = parseFloat(total.replace(',','.')).toFixed(3);
 
         //LastSeen Handling
         const new_seen = el.seen == 'Now' ? 0 : parseInt(el.seen.split(' ')[0].trim());
@@ -106,7 +107,8 @@ function normalized( data){
             trader : new_trader,
             location : new_location,
             price : { perPrice : uniquePrice, countItem: count, total: total, asString: new_price },
-            seen : new_seen
+            seen : new_seen,
+            comparePrice : compareTotal
         }
         
     } );
@@ -117,34 +119,24 @@ function normalized( data){
 function filterBySeen( data , seenFrom, seenTo){
 
     const filteredData = data.filter( (el) => {
-
-        const seen = el.seen.split(' ')[0] == 'Now' ? 0 : el.seen.split(' ')[0];
-
-        if( el !== null ){
-            //Filtering
-            return parseInt(seen) <= parseInt(seenTo) && 
-                   parseInt(seenFrom) <= parseInt(seen) ;
-        }
-        
+        return el.seen  >= parseInt(seenTo)  && el.seen <= parseInt(seenFrom);
     });
 
-    console.log(filteredData);
     return filteredData;
 }
 
 function filterByPrice( data , priceFrom, priceTo ){
 
+
     const filteredData = data.filter( (el) => {
 
-        const price = el.price.split('\n')[0].replace(',', '.');
-        // Filtering
-        //TODO :: fix if statements
-        if( el !== null ){
-            return parseFloat(price).toFixed(3) <= parseFloat(priceTo).toFixed(3) &&
-                   parseFloat(priceFrom).toFixed(3) <= parseFloat(price).toFixed(3);
-        }
+        console.log(parseFloat(el.comparePrice).toFixed(3));
+
+        return  parseFloat(el.comparePrice).toFixed(3) >= parseFloat(priceTo).toFixed(3) &&
+                parseFloat(el.comparePrice).toFixed(3)  <=  parseFloat(priceFrom).toFixed(3); 
         
     });
 
+    console.log(parseFloat(priceFrom).toFixed(3));
     return filteredData;
 }
