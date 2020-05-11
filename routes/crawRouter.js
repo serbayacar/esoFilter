@@ -4,8 +4,8 @@ var router = express.Router();
 var controller = require('../controllers/filter');
 
 //GET Request
-router.get('/money', controller.filterSeen);
-
+router.get('/seen', controller.filterSeen);
+router.get('/money', controller.filterPrice);
 
 //POST Request
 router.post('/crawl', controller.crawlItemsFromWebsite);

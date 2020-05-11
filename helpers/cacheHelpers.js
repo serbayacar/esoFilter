@@ -17,7 +17,6 @@ class CacheHelpers {
 
   set(key, data) {
     this.cache.set(key, data);
-    console.log(key, '.... ', data);
   }
 
 

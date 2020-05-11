@@ -148,7 +148,6 @@ module.exports.crawlItem  = async(searchURL, pageStart, pageTo) => {
     await browser.close();
 
     console.log('Finish .....');
-    console.log(AllItemsArray);
     return AllItemsArray;
 
 

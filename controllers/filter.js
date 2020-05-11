@@ -76,7 +76,37 @@ module.exports.filterPrice =  function(req, res) {
 
 function normalized( data){                  
     const normalizedData = data.filter( (el) => el!==null );
-    return normalizedData
+
+    const normalizedItems = normalizedData.map( (el) => {
+
+
+
+        const new_name = el.name.replace(/\s/g, " ").trim();
+        const exacName = new_name.split('Level:')[0].trim();
+        const level =  new_name.split('Level:')[1].trim();
+        
+        const new_trader = el.trader.replace(/\s/g, " ").trim();
+        const new_location = el.location.replace(/\s/g, " ").trim();
+
+        const new_price = el.price.replace(/\s/g, " ").trim();
+        const total = new_price.split('=')[1].trim();
+        const equation = new_price.split('=')[0].trim();
+        const count = equation.split('X')[1].trim();
+        const uniquePrice = equation.split('X')[0].trim();
+
+        const new_seen = el.seen == 'Now' ? 0 : parseInt(el.seen.split(' ')[0].trim());
+        return {
+            name : exacName,
+            level : level,
+            trader : new_trader,
+            location : new_location,
+            price : { perPrice : uniquePrice, countItem: count, total: total, asString: new_price },
+            seen : new_seen
+        }
+        
+    } );
+
+    return normalizedItems
 }
 
 function filterBySeen( data , seenFrom, seenTo){
