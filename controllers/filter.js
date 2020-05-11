@@ -99,6 +99,7 @@ function normalized( data){
 
         //LastSeen Handling
         const new_seen = el.seen == 'Now' ? 0 : parseInt(el.seen.split(' ')[0].trim());
+
         return {
             name : exacName,
             level : level,
