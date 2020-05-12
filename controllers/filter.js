@@ -96,10 +96,11 @@ function normalized( data){
         const equation = new_price.split('=')[0].trim();
         const count = equation.split('X')[1].trim();
         const uniquePrice = equation.split('X')[0].trim();
-        const compareTotal = parseFloat(total.replace(',','.')).toFixed(3);
+        const compareTotal = parseFloat(uniquePrice.replace(',','.'));
 
         //LastSeen Handling
         const new_seen = el.seen == 'Now' ? 0 : parseInt(el.seen.split(' ')[0].trim());
+        const seen_unite = el.seen == 'Now' ? 0 : el.seen.split(' ')[1].trim();
 
         return {
             name : exacName,
@@ -108,6 +109,7 @@ function normalized( data){
             location : new_location,
             price : { perPrice : uniquePrice, countItem: count, total: total, asString: new_price },
             seen : new_seen,
+            seen_unite : seen_unite,
             comparePrice : compareTotal
         }
         
@@ -130,13 +132,10 @@ function filterByPrice( data , priceFrom, priceTo ){
 
     const filteredData = data.filter( (el) => {
 
-        console.log(parseFloat(el.comparePrice).toFixed(3));
-
-        return  parseFloat(el.comparePrice).toFixed(3) >= parseFloat(priceTo).toFixed(3) &&
-                parseFloat(el.comparePrice).toFixed(3)  <=  parseFloat(priceFrom).toFixed(3); 
+        return  el.comparePrice >= priceTo &&
+                el.comparePrice <= priceFrom; 
         
     });
 
-    console.log(parseFloat(priceFrom).toFixed(3));
     return filteredData;
 }
